@@ -1,0 +1,19 @@
+{
+  "name": "caffeine2.0",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @caffeine/web dev",
+    "build": "pnpm --filter @caffeine/web build",
+    "start": "pnpm --filter @caffeine/web start",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "db:generate": "pnpm --filter @caffeine/db generate",
+    "db:migrate": "pnpm --filter @caffeine/db migrate",
+    "db:studio": "pnpm --filter @caffeine/db studio"
+  }
+}

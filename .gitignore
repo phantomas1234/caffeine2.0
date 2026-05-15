@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Builds
+.next/
+out/
+dist/
+build/
+
+# Env
+.env
+.env.local
+.env*.local
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editors
+.vscode/
+.idea/
+.DS_Store
+
+# Misc
+*.tsbuildinfo
+next-env.d.ts
+.vercel
+.turbo
+coverage/
+
+# Drizzle generated SQL is checked in; cache is not
+.drizzle/
+
+# Playwright
+playwright-report/
+test-results/
