@@ -53,6 +53,21 @@ export type Model = {
   updatedAt: string;
 };
 
+export type MapSummary = {
+  id: string;
+  name: string;
+  modelId: string | null;
+  projectId: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type EscherMapDocument = MapSummary & {
+  ownerId: string | null;
+  isPublic: boolean;
+  escher: unknown;
+};
+
 export const api = {
   listProjects: () =>
     request<{ projects: ProjectSummary[] }>("/api/projects"),
@@ -89,6 +104,30 @@ export const api = {
     objectKey: string;
   }) =>
     request<{ model: Model }>("/api/models", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+
+  listMaps: (opts?: { projectId?: string; modelId?: string }) => {
+    const params = new URLSearchParams();
+    if (opts?.projectId) params.set("projectId", opts.projectId);
+    if (opts?.modelId) params.set("modelId", opts.modelId);
+    const qs = params.toString();
+    return request<{ maps: MapSummary[] }>(
+      qs ? `/api/maps?${qs}` : "/api/maps",
+    );
+  },
+  getMap: (id: string) =>
+    request<{ map: EscherMapDocument }>(`/api/maps/${id}`),
+  deleteMap: (id: string) =>
+    request<void>(`/api/maps/${id}`, { method: "DELETE" }),
+  createMap: (data: {
+    name: string;
+    projectId: string;
+    modelId?: string;
+    escher: unknown;
+  }) =>
+    request<{ map: MapSummary }>("/api/maps", {
       method: "POST",
       body: JSON.stringify(data),
     }),

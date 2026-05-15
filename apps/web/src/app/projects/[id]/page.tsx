@@ -17,6 +17,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api-client";
 import { UploadModelDialog } from "@/components/UploadModelDialog";
+import { UploadMapDialog } from "@/components/UploadMapDialog";
 
 export default function ProjectDetailPage({
   params,
@@ -24,7 +25,8 @@ export default function ProjectDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = use(params);
-  const [uploadOpen, setUploadOpen] = useState(false);
+  const [uploadModelOpen, setUploadModelOpen] = useState(false);
+  const [uploadMapOpen, setUploadMapOpen] = useState(false);
 
   const project = useQuery({
     queryKey: ["projects", id],
@@ -34,6 +36,11 @@ export default function ProjectDetailPage({
   const models = useQuery({
     queryKey: ["models", id],
     queryFn: () => api.listModels(id),
+  });
+
+  const maps = useQuery({
+    queryKey: ["maps", id],
+    queryFn: () => api.listMaps({ projectId: id }),
   });
 
   return (
@@ -60,13 +67,22 @@ export default function ProjectDetailPage({
             </Typography>
           ) : null}
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setUploadOpen(true)}
-        >
-          Upload model
-        </Button>
+        <Stack direction="row" spacing={1}>
+          <Button
+            variant="outlined"
+            startIcon={<AddIcon />}
+            onClick={() => setUploadMapOpen(true)}
+          >
+            Upload map
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setUploadModelOpen(true)}
+          >
+            Upload model
+          </Button>
+        </Stack>
       </Stack>
 
       <Typography variant="h6" sx={{ mb: 2 }}>
@@ -141,9 +157,54 @@ export default function ProjectDetailPage({
         </Stack>
       )}
 
+      <Typography variant="h6" sx={{ mt: 5, mb: 2 }}>
+        Maps
+      </Typography>
+
+      {maps.error ? (
+        <Alert severity="error">{(maps.error as Error).message}</Alert>
+      ) : maps.isLoading ? (
+        <Stack spacing={2}>
+          {[0, 1].map((i) => (
+            <Skeleton key={i} variant="rounded" height={64} />
+          ))}
+        </Stack>
+      ) : maps.data?.maps.length === 0 ? (
+        <Card variant="outlined">
+          <CardContent>
+            <Typography color="text.secondary">
+              No maps yet. Upload an Escher JSON map.
+            </Typography>
+          </CardContent>
+        </Card>
+      ) : (
+        <Stack spacing={2}>
+          {maps.data?.maps.map((m) => (
+            <Link
+              key={m.id}
+              href={`/maps/${m.id}`}
+              style={{ textDecoration: "none", color: "inherit" }}
+            >
+              <Card variant="outlined">
+                <CardActionArea>
+                  <CardContent>
+                    <Typography variant="h6">{m.name}</Typography>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </Link>
+          ))}
+        </Stack>
+      )}
+
       <UploadModelDialog
-        open={uploadOpen}
-        onClose={() => setUploadOpen(false)}
+        open={uploadModelOpen}
+        onClose={() => setUploadModelOpen(false)}
+        projectId={id}
+      />
+      <UploadMapDialog
+        open={uploadMapOpen}
+        onClose={() => setUploadMapOpen(false)}
         projectId={id}
       />
     </Box>
