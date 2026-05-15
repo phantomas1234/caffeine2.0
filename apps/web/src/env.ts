@@ -16,6 +16,7 @@ const schema = z.object({
   MODAL_NINJA_URL: z.string().url().optional(),
   MODAL_MODEL_PARSER_URL: z.string().url().optional(),
   MODEL_PARSER_TOKEN: z.string().min(1).optional(),
+  SIMULATIONS_TOKEN: z.string().min(1).optional(),
 });
 
 export const env = schema.parse(process.env);

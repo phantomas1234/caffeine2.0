@@ -68,6 +68,39 @@ export type EscherMapDocument = MapSummary & {
   escher: unknown;
 };
 
+export type Design = {
+  id: string;
+  name: string;
+  description: string | null;
+  projectId: string | null;
+  modelId: string;
+  ownerId: string | null;
+  design: import("./design-schema").DesignPayload;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type FbaResult = {
+  status: string;
+  objective_value: number | null;
+  growth_rate: number | null;
+  fluxes: Record<string, number>;
+  errors: string[];
+};
+
+export type FvaResult = {
+  status: string;
+  ranges: Record<string, { min: number; max: number }>;
+  errors: string[];
+};
+
+export type MaxYieldResult = {
+  status: string;
+  max_yield: number | null;
+  units: string;
+  errors: string[];
+};
+
 export const api = {
   listProjects: () =>
     request<{ projects: ProjectSummary[] }>("/api/projects"),
@@ -131,4 +164,74 @@ export const api = {
       method: "POST",
       body: JSON.stringify(data),
     }),
+
+  listDesigns: (opts?: { projectId?: string; modelId?: string }) => {
+    const params = new URLSearchParams();
+    if (opts?.projectId) params.set("projectId", opts.projectId);
+    if (opts?.modelId) params.set("modelId", opts.modelId);
+    const qs = params.toString();
+    return request<{ designs: Design[] }>(
+      qs ? `/api/designs?${qs}` : "/api/designs",
+    );
+  },
+  getDesign: (id: string) =>
+    request<{ design: Design }>(`/api/designs/${id}`),
+  createDesign: (data: {
+    name: string;
+    description?: string;
+    projectId: string;
+    modelId: string;
+    design: import("./design-schema").DesignPayload;
+  }) =>
+    request<{ design: Design }>("/api/designs", {
+      method: "POST",
+      body: JSON.stringify(data),
+    }),
+  updateDesign: (
+    id: string,
+    data: {
+      name?: string;
+      description?: string | null;
+      design?: import("./design-schema").DesignPayload;
+    },
+  ) =>
+    request<{ design: Design }>(`/api/designs/${id}`, {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+  deleteDesign: (id: string) =>
+    request<void>(`/api/designs/${id}`, { method: "DELETE" }),
+
+  simulateFba: (data: {
+    modelId: string;
+    design?: import("./design-schema").DesignPayload;
+    objective?: string;
+  }) =>
+    request<{ method: "fba"; result: FbaResult }>("/api/simulate", {
+      method: "POST",
+      body: JSON.stringify({ method: "fba", ...data }),
+    }),
+  simulateFva: (data: {
+    modelId: string;
+    design?: import("./design-schema").DesignPayload;
+    reactions?: string[];
+    fractionOfOptimum?: number;
+  }) =>
+    request<{ method: "fva"; result: FvaResult }>("/api/simulate", {
+      method: "POST",
+      body: JSON.stringify({ method: "fva", ...data }),
+    }),
+  simulateMaximumYield: (data: {
+    modelId: string;
+    productId: string;
+    substrateId: string;
+    design?: import("./design-schema").DesignPayload;
+  }) =>
+    request<{ method: "maximum_yield"; result: MaxYieldResult }>(
+      "/api/simulate",
+      {
+        method: "POST",
+        body: JSON.stringify({ method: "maximum_yield", ...data }),
+      },
+    ),
 };
